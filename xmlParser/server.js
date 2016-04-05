@@ -3,12 +3,22 @@
  */
 var http = require('http');
 var fs = require('fs');
+var formidable = require('formidable');
+var xmlData;
 
 var server = http.createServer(function(request, response){
-   if (request.url.includes('getInputXml')){
-      fs.readFile(request.url, function(e, d){
-         getData(response);
-      });
+   if (request.method == 'POST') {
+      if (request.url.includes('getInputXml')) {
+         fs.readFile(request.url, function (e, d) {
+            getData(response);
+         });
+      }
+      else if (request.url.includes('saveXml')){
+         var form = new formidable.IncomingForm();
+         form.parse(request, function(err, fields, files) {
+            saveData(response, { Parameter: JSON.parse(fields.xml) });
+         });
+      }
       return;
    }
    var filePath = false;
@@ -58,7 +68,28 @@ function getData(response){
    var parser = new xml2js.Parser();
    fs.readFile(__dirname + '/public/data/input.xml', function(err, data) {
       parser.parseString(data, function (err, result) {
+         xmlData = result.Parameters;
          response.end(JSON.stringify(result.Parameters.Parameter));
       });
+   });
+}
+
+function saveData(response, data){
+   var js2xmlparser = require("js2xmlparser");
+   var xmlData = js2xmlparser("Parameters", data);
+   console.log(xmlData);
+   fs.open("public/data/output.xml", "w", '0644', function(err, file_handle) {
+      if (!err) {
+         fs.write(file_handle, xmlData, 0, 'utf8', function(err, written) {
+            if (!err) {
+               response.end('done!');
+            } else {
+               response.end('recording error!');
+            }
+            fs.close(file_handle);
+         });
+      } else {
+         response.end('open error!');
+      }
    });
 }

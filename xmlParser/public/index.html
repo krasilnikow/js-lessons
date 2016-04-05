@@ -13,6 +13,10 @@
          border-color: #ccc;
          border-style: solid;
       }
+      .parser-head{
+         font-weight: bold;
+         background: #eee;
+      }
       .parser-item-row{
          display: table-row;
       }
@@ -22,11 +26,43 @@
          border-width: 1px 0;
          border-color: #ccc;
          border-style: solid;
+         vertical-align: middle;
+      }
+      .parser-value{
+         width: 200px;
+      }
+      .parser-type{
+         width: 50px;
+      }
+      .parser-item-new .parser-type{
+         cursor: pointer;;
+      }
+      #controlButtons{
+         display: table;
+         width: 70%;
+         min-width: 600px;
+         margin: 0 auto;
+      }
+      #controlButtons img {
+         width: 30px;
+         height: 30px;
+         float: right;
+         margin-top: 10px;
+         cursor: pointer;
+      }
+      .parser-validation-error{
+         outline: 1px solid #fc8c84;
+      }
+      #deleteButton img{
+         width: 30px;
+         height: 30px;
+         position: absolute;
+         display: none;
       }
    </style>
 </head>
 <body>
-   <div id="parserAppContainer"></div>
+   <div id="parser"></div>
    <script src="http://code.jquery.com/jquery-1.8.0.min.js" type="text/javascript"></script>
    <script src="/javascript/parser.js" type="text/javascript"></script>
    <script src="/javascript/parser_ui.js" type="text/javascript"></script>
