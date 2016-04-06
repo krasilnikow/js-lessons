@@ -6,40 +6,69 @@
    <style type="text/css">
       #parserAppContainer{
          display: table;
-         width: 70%;
-         min-width: 600px;
          margin: 0 auto;
-         border-width: 0 1px;
-         border-color: #ccc;
-         border-style: solid;
+         border: 1px solid #ddd;
       }
-      .parser-head{
+      .parser-item-row.parser-head, .parser-item-row.parser-head:hover{
          font-weight: bold;
-         background: #eee;
+         color: #fff;
+         background: #7abcff;
+         background: -moz-linear-gradient(top, #7abcff 0%, #60abf8 44%, #4096ee 100%);
+         background: -webkit-linear-gradient(top, #7abcff 0%,#60abf8 44%,#4096ee 100%);
+         background: linear-gradient(to bottom, #7abcff 0%,#60abf8 44%,#4096ee 100%);
+         filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#7abcff', endColorstr='#4096ee',GradientType=0 );
+      }
+      .parser-head .parser-item-cell{
+         border-top: none;
       }
       .parser-item-row{
          display: table-row;
       }
+      .parser-item-row:hover{
+         background: #e0f3fa; /* Old browsers */
+         background: -moz-linear-gradient(top,  #e0f3fa 0%, #d8f0fc 50%, #b8e2f6 51%, #b6dffd 100%);
+         background: -webkit-linear-gradient(top,  #e0f3fa 0%,#d8f0fc 50%,#b8e2f6 51%,#b6dffd 100%); 
+         background: linear-gradient(to bottom,  #e0f3fa 0%,#d8f0fc 50%,#b8e2f6 51%,#b6dffd 100%); 
+         filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e0f3fa', endColorstr='#b6dffd',GradientType=0 ); 
+         cursor: default;
+      }
+      .parser-item-row:hover div[contenteditable], .parser-item-row:hover input{
+         cursor: pointer;
+      }
+      .parser-item-row:hover div[contenteditable]{
+         background: #e4f5fc; /* Old browsers */
+         background: -moz-linear-gradient(top, #e4f5fc 0%, #bfe8f9 50%, #9fd8ef 51%, #2ab0ed 100%); /* FF3.6-15 */
+         background: -webkit-linear-gradient(top, #e4f5fc 0%,#bfe8f9 50%,#9fd8ef 51%,#2ab0ed 100%); /* Chrome10-25,Safari5.1-6 */
+         background: linear-gradient(to bottom, #e4f5fc 0%,#bfe8f9 50%,#9fd8ef 51%,#2ab0ed 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+         filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e4f5fc', endColorstr='#2ab0ed',GradientType=0 ); /* IE6-9 */
+         outline: 1px solid #ddd;
+         outline-offset: -1px;
+      }
       .parser-item-cell{
          display: table-cell;
          padding: 5px;
-         border-width: 1px 0;
-         border-color: #ccc;
-         border-style: solid;
+         border-top: 1px solid #ddd;
          vertical-align: middle;
-      }
-      .parser-value{
-         width: 200px;
+         text-align: center;
+         width: 210px;
       }
       .parser-type{
          width: 50px;
       }
+      .parser-item-new{
+         background: #ffffff; 
+         background: -moz-linear-gradient(top,  #ffffff 0%, #f1f1f1 50%, #e1e1e1 51%, #f6f6f6 100%);
+         background: -webkit-linear-gradient(top,  #ffffff 0%,#f1f1f1 50%,#e1e1e1 51%,#f6f6f6 100%); 
+         background: linear-gradient(to bottom,  #ffffff 0%,#f1f1f1 50%,#e1e1e1 51%,#f6f6f6 100%); 
+         filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#f6f6f6',GradientType=0 );
+
+      }
       .parser-item-new .parser-type{
          cursor: pointer;;
       }
-      #controlButtons{
+      .parser-nav{
          display: table;
-         width: 70%;
+         width: 945px;
          min-width: 600px;
          margin: 0 auto;
       }
@@ -47,7 +76,7 @@
          width: 30px;
          height: 30px;
          float: right;
-         margin-top: 10px;
+         margin: 10px 1px 0 1px;
          cursor: pointer;
       }
       .parser-validation-error{
@@ -58,6 +87,19 @@
          height: 30px;
          position: absolute;
          display: none;
+      }
+      #parser-errors{
+         border: 1px solid #f00;
+         border-radius: 5px;
+         margin-top: 10px;
+         background: #febbbb; /* Old browsers */
+         background: -moz-linear-gradient(top,  #febbbb 0%, #fe9090 45%, #ff5c5c 100%); /* FF3.6-15 */
+         background: -webkit-linear-gradient(top,  #febbbb 0%,#fe9090 45%,#ff5c5c 100%); /* Chrome10-25,Safari5.1-6 */
+         background: linear-gradient(to bottom,  #febbbb 0%,#fe9090 45%,#ff5c5c 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+         filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#febbbb', endColorstr='#ff5c5c',GradientType=0 ); /* IE6-9 */
+      }
+      .parser-hidden{
+         display: none;;
       }
    </style>
 </head>

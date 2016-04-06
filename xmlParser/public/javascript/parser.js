@@ -7,6 +7,7 @@ class Parser {
    constructor() {
       this._data = [];
       this._container = undefined;
+      this._errorContainer = undefined;
    }
 
    getData() {
@@ -17,7 +18,7 @@ class Parser {
    }
 
    setData(data) {
-      if (typeof(data)) {
+      if (typeof(data) === 'string') {
          this._data = JSON.parse(data);
       }
       else if (data instanceof Array) {
@@ -30,7 +31,7 @@ class Parser {
 
    drawData(container) {
       this._container = $('<div id="parserAppContainer"></div>').appendTo(container);
-      var headData = {
+      let headData = {
          Id: 'Id',
          Name: 'Name',
          Description: 'Description',
@@ -45,7 +46,7 @@ class Parser {
       }
 
       this._container.on('mousedown', function (event) {
-         var $target = $(event.target),
+         let $target = $(event.target),
             row = $target.closest('.parser-item-row');
          if (event.which == 3){ //Удаляем запись по нажатию ПКМ. Интуитивно понятный интерфейс наше все
             if (confirm('Удалить запись?')){
@@ -53,7 +54,7 @@ class Parser {
             }
             return;
          }
-         var typeData = {
+         let typeData = {
                'Type.String': 'Type.Int32',
                'Type.Int32': 'Type.Boolean',
                'Type.Boolean': 'Type.String'
@@ -81,40 +82,37 @@ class Parser {
          }
       });
 
+      this._errorContainer = $('<div id="parser-errors" class="parser-nav parser-hidden"></div>').insertAfter(this._container);
 
-      var controlsButtons = $('<div id="controlButtons">' +
-         '<img src="images/add.png" onclick="setCommand(\'addRow\')"/>' +
-         '<img src="images/save.png" onclick="setCommand(\'save\')"/></div>');
+      let controlsButtons = $('<div id="controlButtons" class="parser-nav">' +
+         '<img src="images/add.png" onclick="setCommand(\'addRow\')" title="Добавить запись"/>' +
+         '<img src="images/save.png" onclick="setCommand(\'save\')" title="Сохранить"/></div>');
       controlsButtons.insertAfter(this._container);
-
-      var deleteButton = $('<div id="deleteButton"><img src="images/delete.png" onclick="setCommand(\'deleteRow\')"/></div>').insertAfter(this._container);
    }
 
    addRow() {
-      var emptyData = {
+      let emptyData = {
          Id: '',
          Name: '',
          Description: '',
          Value: '',
          Type: ['Type.String']
       };
-      var itemTpl = this._getItemTpl(emptyData).addClass('parser-item-new');
+      let itemTpl = this._getItemTpl(emptyData).addClass('parser-item-new');
       $('.parser-item-cell:not(.parser-type)', itemTpl).attr('contenteditable', true);
       this._container.append(itemTpl);
    }
 
    save() {
-      var rows = this._getRows();
-      if (!rows.length) {
-         return;
-      }
-      var newData = [];
-      for (var i = 0, l = rows.length; i < l; i++){
-         var cells = $('.parser-item-cell', rows[i]);
-         var rowData = {};
-         var $cell;
-         var field;
-         for (var j = 0; j < cells.length; j++){
+      let rows = this._getRows(),
+          newData = [],
+          self = this;
+      for (let i = 0, l = rows.length; i < l; i++){
+         let cells = $('.parser-item-cell', rows[i]),
+             rowData = {},
+             $cell,
+             field;
+         for (let j = 0; j < cells.length; j++){
             $cell = $(cells[j]);
             field = $cell.attr('field');
             if ($cell.data('type') && $cell.data('type').includes('Boolean')){
@@ -131,20 +129,32 @@ class Parser {
          type:"POST",
          data:"xml="+ JSON.stringify(newData)
       }).done(function(res){
-         alert(res);
+         if (res == 'done!'){
+            window.open('http://localhost:8888/data/output.xml', '_blank');
+            self._errorContainer.addClass('parser-hidden');
+         }
+         else{
+            let out = '<ul>';
+            $.each(JSON.parse(res), function(k, v){
+               if (k !== 'count'){
+                  out += '<li>' + v + '</li>';
+               }
+            });
+            self._errorContainer.html(out + '</ul>').removeClass('parser-hidden');
+         }
       });
    }
 
    validate() {
       //Добавил функцию валидации, но по факту нигде не заюзал.
-      var rows = this._getRows();
+      let rows = this._getRows();
       if (!rows.length) {
          return true;
       }
-      var hasErrors = false,
+      let hasErrors = false,
          valueContainer,
          type;
-      for (var i = 0, l = rows.length; i < l; i++) {
+      for (let i = 0, l = rows.length; i < l; i++) {
          valueContainer = $('.parser-value', rows[i]);
          type = valueContainer.data('type');
          if (type.includes('Int')) {
@@ -162,9 +172,10 @@ class Parser {
    _getItemTpl(item, isHead) {
       //Шаблонизатор года
       let itemTpl = $('<div class="parser-item-row"></div>').addClass(isHead ? 'parser-head' : '');
-      itemTpl.append($('<div class="parser-item-cell" field="Id"></div>').text(item.Id));
+      itemTpl.append($('<div class="parser-item-cell parser-id" field="Id"></div>').text(item.Id));
       itemTpl.append($('<div class="parser-item-cell" field="Name"></div>').text(item.Name));
       itemTpl.append($('<div class="parser-item-cell" field="Description"></div>').text(item.Description));
+
       let valueContainer = $('<div class="parser-item-cell parser-value" field="Value"></div>').attr('data-type', item.Type);
       if (item.Type[0].includes('Boolean') && !isHead) {
          valueContainer.append($('<input type="checkbox" />').attr('checked', item.Value[0].includes('True')));
@@ -178,6 +189,7 @@ class Parser {
          }
       });
       itemTpl.append(valueContainer);
+
       itemTpl.append($('<div class="parser-item-cell parser-type" field="Type"></div>').text(item.Type[0].split('.')[1]));
       return itemTpl;
    }
