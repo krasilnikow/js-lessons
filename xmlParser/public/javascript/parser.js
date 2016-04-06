@@ -130,7 +130,7 @@ class Parser {
          data:"xml="+ JSON.stringify(newData)
       }).done(function(res){
          if (res == 'done!'){
-            window.open(location.href + '/data/output.xml', '_blank');
+            window.open(location.href + 'data/output.xml', '_blank');
             self._errorContainer.addClass('parser-hidden');
          }
          else{
