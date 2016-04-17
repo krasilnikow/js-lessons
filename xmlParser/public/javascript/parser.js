@@ -106,7 +106,12 @@ class Parser {
    save() {
       let rows = this._getRows(),
           newData = [],
-          self = this;
+          self = this,
+          errors = this.validate();
+      if (errors.count){
+         this._setErrors(errors, ['count']);
+         return;
+      }
       for (let i = 0, l = rows.length; i < l; i++){
          let cells = $('.parser-item-cell', rows[i]),
              rowData = {},
@@ -131,16 +136,10 @@ class Parser {
       }).done(function(res){
          if (res == 'done!'){
             window.open(location.href + 'data/output.xml', '_blank');
-            self._errorContainer.addClass('parser-hidden');
+            self._toggleErrors(true);
          }
          else{
-            let out = '<ul>';
-            $.each(JSON.parse(res), function(k, v){
-               if (k !== 'count'){
-                  out += '<li>' + v + '</li>';
-               }
-            });
-            self._errorContainer.html(out + '</ul>').removeClass('parser-hidden');
+            self._setErrors(JSON.parse(res), ['count']);
          }
       });
    }
@@ -151,18 +150,30 @@ class Parser {
       if (!rows.length) {
          return true;
       }
-      let hasErrors = false,
+      let errors = {
+         count: 0
+      },
+         valuesContainer,
          valueContainer,
          type;
       for (let i = 0, l = rows.length; i < l; i++) {
-         valueContainer = $('.parser-value', rows[i]);
-         type = valueContainer.data('type');
-         if (type.includes('Int')) {
-            hasErrors = true;
-            valueContainer.toggleClass('parser-validation-error', valueContainer.text().search(/[a-z]/i) > -1);
+         valuesContainer = $('.parser-item-cell', rows[i]);
+         for(let j = 0, k = valuesContainer.length; j < k; j++){
+            valueContainer = $(valuesContainer[j]);
+            type = valueContainer.data('type') || 'String';
+            if (type.includes('Int')) {
+               if (valueContainer.hasClass('parser-validation-error')){
+                  errors.count++;
+                  errors.intBadField = 'Значения в поле с типом Int32 должны быть валидны типу integer';
+               }
+            }
+            else if (type.includes('String') && !valueContainer.text()){
+               errors.count++;
+               errors.stringEmpty = 'Поля не могут быть пустыми';
+            }
          }
       }
-      return !hasErrors;
+      return errors;
    }
 
    _getRows() {
@@ -184,13 +195,41 @@ class Parser {
          valueContainer.text(item.Value).attr('contenteditable', true);
       }
       valueContainer.on('keydown', function(e){
-         if ($(this).data('type').includes('Int') && e.keyCode > 57){
+         if ($(this).data('type').includes('Int') && e.keyCode > 57 && e.keyCode !== 189){
             e.preventDefault(false);
          }
+
+      });
+      valueContainer.on('keyup', function(e){
+         if (!$(this).data('type').includes('Int')){
+            return;
+         }
+         var oldValue = $(this).data('value'),
+            newValue = parseInt(this.textContent),
+            $textContainer = $(this),
+            isNaNValue = isNaN(newValue),
+            isError = isNaNValue || newValue.toString().length !== this.textContent.length;
+         if (isError){
+            $textContainer.text(oldValue);
+         }
+         $textContainer.toggleClass('parser-validation-error', isError);
       });
       itemTpl.append(valueContainer);
 
       itemTpl.append($('<div class="parser-item-cell parser-type" field="Type"></div>').text(item.Type[0].split('.')[1]));
       return itemTpl;
+   }
+
+   _setErrors(errors = {}, ignoreKeys = []){
+      let out = '<ul>';
+      $.each(errors, function(k, v){
+         if (!ignoreKeys.includes(k)){
+            out += '<li>' + v + '</li>';
+         }
+      });
+      this._errorContainer.html(out + '</ul>').removeClass('parser-hidden');
+   }
+   _toggleErrors(toggle){
+      this._errorContainer.toggleClass('parser-hidden', !!toggle);
    }
 }
