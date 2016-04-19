@@ -194,13 +194,11 @@ class Parser {
       else {
          valueContainer.text(item.Value).attr('contenteditable', true);
       }
-      valueContainer.on('keydown', function(e){
-         if ($(this).data('type').includes('Int') && e.keyCode > 57 && e.keyCode !== 189){
-            e.preventDefault(false);
-         }
-
+      valueContainer.on('focusin', function(){
+         $(this).data('value', $(this).text());
       });
-      valueContainer.on('keyup', function(e){
+
+      valueContainer[0].addEventListener("input", function(e) {
          if (!$(this).data('type').includes('Int')){
             return;
          }
@@ -209,11 +207,14 @@ class Parser {
             $textContainer = $(this),
             isNaNValue = isNaN(newValue),
             isError = isNaNValue || newValue.toString().length !== this.textContent.length;
-         if (isError){
+         if (isError && this.textContent !== '' && this.textContent !== '-'){
             $textContainer.text(oldValue);
          }
+         else{
+            $(this).data('value', isNaN(newValue) ? this.textContent : newValue);
+         }
          $textContainer.toggleClass('parser-validation-error', isError);
-      });
+      }, false);
       itemTpl.append(valueContainer);
 
       itemTpl.append($('<div class="parser-item-cell parser-type" field="Type"></div>').text(item.Type[0].split('.')[1]));
