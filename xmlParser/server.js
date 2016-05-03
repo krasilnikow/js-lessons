@@ -39,7 +39,7 @@ var server = http.createServer(function (request, response) {
    }
    var absPath = './' + filePath;
    serverStatic(response, absPath);
-}).listen(8888, function () {
+}).listen(process.env.PORT || 8888, function () {
    console.info('Server listening on port 8888');
 });
 

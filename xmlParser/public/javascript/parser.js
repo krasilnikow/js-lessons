@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Created by Andrew on 03.04.2016.
  */
 'use strict';
@@ -135,11 +135,13 @@ class Parser {
          data:"xml="+ JSON.stringify(newData)
       }).done(function(res){
          if (res == 'done!'){
+self._getRows().find('.parser-validation-error').removeClass('parser-validation-error');
             window.open(location.href + 'data/output.xml', '_blank');
             self._toggleErrors(true);
          }
          else{
-            self._setErrors(JSON.parse(res), ['count']);
+            
+            self._setErrors(JSON.parse(res), ['count'], true);
          }
       });
    }
@@ -162,7 +164,7 @@ class Parser {
             valueContainer = $(valuesContainer[j]);
             type = valueContainer.data('type') || 'String';
             if (type.includes('Int')) {
-               if (valueContainer.hasClass('parser-validation-error')){
+               if (!valueContainer.text().length){
                   errors.count++;
                   errors.intBadField = 'Значения в поле с типом Int32 должны быть валидны типу integer';
                }
@@ -207,13 +209,24 @@ class Parser {
             $textContainer = $(this),
             isNaNValue = isNaN(newValue),
             isError = isNaNValue || newValue.toString().length !== this.textContent.length;
-         if (isError && this.textContent !== '' && this.textContent !== '-'){
+         if (isError && this.textContent !== '' && this.textContent !== '-' || newValue.toString().length > 10){
+            var currentOffset = getSelection().anchorOffset;
+            var dif = this.textContent.length - oldValue.toString().length;
+
+//test
+            currentOffset -= dif;
             $textContainer.text(oldValue);
+	    var range = document.createRange();
+	    var sel = window.getSelection();
+	    range.setStart(this.childNodes[0], currentOffset);
+	    range.collapse(true);
+	    sel.removeAllRanges();
+	    sel.addRange(range);
          }
          else{
             $(this).data('value', isNaN(newValue) ? this.textContent : newValue);
          }
-         $textContainer.toggleClass('parser-validation-error', isError);
+         //$textContainer.toggleClass('parser-validation-error', isError);
       }, false);
       itemTpl.append(valueContainer);
 
@@ -221,13 +234,51 @@ class Parser {
       return itemTpl;
    }
 
-   _setErrors(errors = {}, ignoreKeys = []){
+getSelection()
+{
+    var savedRange;
+    if(window.getSelection && window.getSelection().rangeCount > 0) //FF,Chrome,Opera,Safari,IE9+
+    {
+        savedRange = window.getSelection().getRangeAt(0).cloneRange();
+    }
+    else if(document.selection)//IE 8 and lower
+    { 
+        savedRange = document.selection.createRange();
+    }
+    return savedRange;
+}
+
+   _setErrors(errors = {}, ignoreKeys = [], save){
       let out = '<ul>';
+      if (save){
+         this._getRows().find('.parser-validation-error').removeClass('parser-validation-error');
+      }
       $.each(errors, function(k, v){
          if (!ignoreKeys.includes(k)){
             out += '<li>' + v + '</li>';
          }
-      });
+if (save){
+	  if( k == 'booleanHasTrueValue'){
+            this._getRows().find('[data-type="System.Boolean"]').addClass('parser-validation-error')
+          }
+          else if (k == 'intRange'){
+   	     var intFields = this._getRows().find('[data-type="System.Int32"]');
+             for (var i = 0; i < intFields.length; i++){
+	        if (+$(intFields[i]).text() < -255 || +$(intFields[i]).text() > 255){
+                   $(intFields[i]).addClass('parser-validation-error');
+                }
+             }
+          }
+          else if (k == 'stringLength'){
+             var strFields = this._getRows().find('[data-type="System.String"]');
+             for (var i = 0; i < strFields.length; i++){
+	        if ($(strFields[i]).text().length > 10){
+                   $(strFields[i]).addClass('parser-validation-error');
+                }
+             }
+          }
+}
+      }.bind(this));
       this._errorContainer.html(out + '</ul>').removeClass('parser-hidden');
    }
    _toggleErrors(toggle){
