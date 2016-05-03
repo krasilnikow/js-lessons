@@ -36,7 +36,7 @@ class Parser {
          Name: 'Name',
          Description: 'Description',
          Value: 'Value',
-         Type: ['Type.Type']
+         Type: ['System.Type']
       };
 
       this._container.append(this._getItemTpl(headData, true));
@@ -55,9 +55,9 @@ class Parser {
             return;
          }
          let typeData = {
-               'Type.String': 'Type.Int32',
-               'Type.Int32': 'Type.Boolean',
-               'Type.Boolean': 'Type.String'
+               'System.String': 'System.Int32',
+               'System.Int32': 'System.Boolean',
+               'System.Boolean': 'System.String'
             },
             value,
             type,
@@ -71,6 +71,7 @@ class Parser {
             type = typeData[value.data('type')];
             $target.text(type.split('.')[1]);
             value.data('type', type);
+            value.attr('data-type', type);//не помню где может еще юзаться, поэтому через data тоже оставлю
             isBooleanType = type.includes('Boolean');
             value.attr('contenteditable', !isBooleanType);
             if (type.includes('Boolean')) {
@@ -96,7 +97,7 @@ class Parser {
          Name: '',
          Description: '',
          Value: '',
-         Type: ['Type.String']
+         Type: ['System.String']
       };
       let itemTpl = this._getItemTpl(emptyData).addClass('parser-item-new');
       $('.parser-item-cell:not(.parser-type)', itemTpl).attr('contenteditable', true);
