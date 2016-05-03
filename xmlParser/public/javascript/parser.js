@@ -12,7 +12,7 @@ class Parser {
 
    getData() {
       return $.ajax({
-         type:"POST",
+         type: "POST",
          url: 'getInputXml'
       })
    }
@@ -48,8 +48,8 @@ class Parser {
       this._container.on('mousedown', function (event) {
          let $target = $(event.target),
             row = $target.closest('.parser-item-row');
-         if (event.which == 3){ //Удаляем запись по нажатию ПКМ. Интуитивно понятный интерфейс наше все
-            if (confirm('Удалить запись?')){
+         if (event.which == 3) { //Удаляем запись по нажатию ПКМ. Интуитивно понятный интерфейс наше все
+            if (confirm('Удалить запись?')) {
                row.remove();
             }
             return;
@@ -105,42 +105,42 @@ class Parser {
 
    save() {
       let rows = this._getRows(),
-          newData = [],
-          self = this,
-          errors = this.validate();
-      if (errors.count){
+         newData = [],
+         self = this,
+         errors = this.validate();
+      if (errors.count) {
          this._setErrors(errors, ['count']);
          return;
       }
-      for (let i = 0, l = rows.length; i < l; i++){
+      for (let i = 0, l = rows.length; i < l; i++) {
          let cells = $('.parser-item-cell', rows[i]),
-             rowData = {},
-             $cell,
-             field;
-         for (let j = 0; j < cells.length; j++){
+            rowData = {},
+            $cell,
+            field;
+         for (let j = 0; j < cells.length; j++) {
             $cell = $(cells[j]);
             field = $cell.attr('field');
-            if ($cell.data('type') && $cell.data('type').includes('Boolean')){
-               rowData[field] = $('input',$cell).is(':checked');
+            if ($cell.data('type') && $cell.data('type').includes('Boolean')) {
+               rowData[field] = $('input', $cell).is(':checked');
             }
-            else{
+            else {
                rowData[field] = (field == 'Type' ? 'System.' : '') + $cell.text();
             }
          }
          newData.push(rowData);
       }
       $.ajax({
-         url:"/saveXml",
-         type:"POST",
-         data:"xml="+ JSON.stringify(newData)
-      }).done(function(res){
-         if (res == 'done!'){
-self._getRows().find('.parser-validation-error').removeClass('parser-validation-error');
+         url: "/saveXml",
+         type: "POST",
+         data: "xml=" + JSON.stringify(newData)
+      }).done(function (res) {
+         if (res == 'done!') {
+            self._getRows().find('.parser-validation-error').removeClass('parser-validation-error');
             window.open(location.href + 'data/output.xml', '_blank');
             self._toggleErrors(true);
          }
-         else{
-            
+         else {
+
             self._setErrors(JSON.parse(res), ['count'], true);
          }
       });
@@ -153,23 +153,23 @@ self._getRows().find('.parser-validation-error').removeClass('parser-validation-
          return true;
       }
       let errors = {
-         count: 0
-      },
+            count: 0
+         },
          valuesContainer,
          valueContainer,
          type;
       for (let i = 0, l = rows.length; i < l; i++) {
          valuesContainer = $('.parser-item-cell', rows[i]);
-         for(let j = 0, k = valuesContainer.length; j < k; j++){
+         for (let j = 0, k = valuesContainer.length; j < k; j++) {
             valueContainer = $(valuesContainer[j]);
             type = valueContainer.data('type') || 'String';
             if (type.includes('Int')) {
-               if (!valueContainer.text().length){
+               if (!valueContainer.text().length) {
                   errors.count++;
                   errors.intBadField = 'Значения в поле с типом Int32 должны быть валидны типу integer';
                }
             }
-            else if (type.includes('String') && !valueContainer.text()){
+            else if (type.includes('String') && !valueContainer.text()) {
                errors.count++;
                errors.stringEmpty = 'Поля не могут быть пустыми';
             }
@@ -196,12 +196,12 @@ self._getRows().find('.parser-validation-error').removeClass('parser-validation-
       else {
          valueContainer.text(item.Value).attr('contenteditable', true);
       }
-      valueContainer.on('focusin', function(){
+      valueContainer.on('focusin', function () {
          $(this).data('value', $(this).text());
       });
 
-      valueContainer[0].addEventListener("input", function(e) {
-         if (!$(this).data('type').includes('Int')){
+      valueContainer[0].addEventListener("input", function (e) {
+         if (!$(this).data('type').includes('Int')) {
             return;
          }
          var oldValue = $(this).data('value'),
@@ -209,21 +209,18 @@ self._getRows().find('.parser-validation-error').removeClass('parser-validation-
             $textContainer = $(this),
             isNaNValue = isNaN(newValue),
             isError = isNaNValue || newValue.toString().length !== this.textContent.length;
-         if (isError && this.textContent !== '' && this.textContent !== '-' || newValue.toString().length > 10){
+         if (isError && this.textContent !== '' && this.textContent !== '-' || newValue > 2147483647 || newValue < -2147483648) {
             var currentOffset = getSelection().anchorOffset;
-            var dif = this.textContent.length - oldValue.toString().length;
-
-//test
-            currentOffset -= dif;
+            currentOffset -= this.textContent.length - oldValue.toString().length;;
             $textContainer.text(oldValue);
-	    var range = document.createRange();
-	    var sel = window.getSelection();
-	    range.setStart(this.childNodes[0], currentOffset);
-	    range.collapse(true);
-	    sel.removeAllRanges();
-	    sel.addRange(range);
+            var range = document.createRange();
+            var sel = window.getSelection();
+            range.setStart(this.childNodes[0], currentOffset);
+            range.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(range);
          }
-         else{
+         else {
             $(this).data('value', isNaN(newValue) ? this.textContent : newValue);
          }
          //$textContainer.toggleClass('parser-validation-error', isError);
@@ -234,54 +231,54 @@ self._getRows().find('.parser-validation-error').removeClass('parser-validation-
       return itemTpl;
    }
 
-getSelection()
-{
-    var savedRange;
-    if(window.getSelection && window.getSelection().rangeCount > 0) //FF,Chrome,Opera,Safari,IE9+
-    {
-        savedRange = window.getSelection().getRangeAt(0).cloneRange();
-    }
-    else if(document.selection)//IE 8 and lower
-    { 
-        savedRange = document.selection.createRange();
-    }
-    return savedRange;
-}
+   getSelection() {
+      var savedRange;
+      if (window.getSelection && window.getSelection().rangeCount > 0) //FF,Chrome,Opera,Safari,IE9+
+      {
+         savedRange = window.getSelection().getRangeAt(0).cloneRange();
+      }
+      else if (document.selection)//IE 8 and lower
+      {
+         savedRange = document.selection.createRange();
+      }
+      return savedRange;
+   }
 
-   _setErrors(errors = {}, ignoreKeys = [], save){
+   _setErrors(errors = {}, ignoreKeys = [], save) {
       let out = '<ul>';
-      if (save){
+      if (save) {
          this._getRows().find('.parser-validation-error').removeClass('parser-validation-error');
       }
-      $.each(errors, function(k, v){
-         if (!ignoreKeys.includes(k)){
+      $.each(errors, function (k, v) {
+         if (!ignoreKeys.includes(k)) {
             out += '<li>' + v + '</li>';
          }
-if (save){
-	  if( k == 'booleanHasTrueValue'){
-            this._getRows().find('[data-type="System.Boolean"]').addClass('parser-validation-error')
-          }
-          else if (k == 'intRange'){
-   	     var intFields = this._getRows().find('[data-type="System.Int32"]');
-             for (var i = 0; i < intFields.length; i++){
-	        if (+$(intFields[i]).text() < -255 || +$(intFields[i]).text() > 255){
-                   $(intFields[i]).addClass('parser-validation-error');
-                }
-             }
-          }
-          else if (k == 'stringLength'){
-             var strFields = this._getRows().find('[data-type="System.String"]');
-             for (var i = 0; i < strFields.length; i++){
-	        if ($(strFields[i]).text().length > 10){
-                   $(strFields[i]).addClass('parser-validation-error');
-                }
-             }
-          }
-}
+         if (save) {
+            if (k == 'booleanHasTrueValue') {
+               this._getRows().find('[data-type="System.Boolean"]').addClass('parser-validation-error')
+            }
+            else if (k == 'intRange') {
+               var intFields = this._getRows().find('[data-type="System.Int32"]');
+               for (var i = 0; i < intFields.length; i++) {
+                  if (+$(intFields[i]).text() < -255 || +$(intFields[i]).text() > 255) {
+                     $(intFields[i]).addClass('parser-validation-error');
+                  }
+               }
+            }
+            else if (k == 'stringLength') {
+               var strFields = this._getRows().find('[data-type="System.String"]');
+               for (var i = 0; i < strFields.length; i++) {
+                  if ($(strFields[i]).text().length > 10) {
+                     $(strFields[i]).addClass('parser-validation-error');
+                  }
+               }
+            }
+         }
       }.bind(this));
       this._errorContainer.html(out + '</ul>').removeClass('parser-hidden');
    }
-   _toggleErrors(toggle){
+
+   _toggleErrors(toggle) {
       this._errorContainer.toggleClass('parser-hidden', !!toggle);
    }
 }
